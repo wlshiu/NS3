@@ -1,0 +1,6 @@
+latex xgpon4ns3_manual;
+bibtex xgpon4ns3_manual;
+latex xgpon4ns3_manual;
+bibtex xgpon4ns3_manual;
+dvipdf xgpon4ns3_manual.dvi;
+evince xgpon4ns3_manual.pdf &

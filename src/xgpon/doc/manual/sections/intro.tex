@@ -1,0 +1,146 @@
+\section{Introduction} \label{section_introduction}
+
+During the last few decades, we have witnessed the huge success of
+the Internet, which has changed our daily life significantly and
+has become one of the main economy engines. In these years, the
+infrastructure of the Internet kept evolving to provide better
+performance, and optical communication is one of its driving
+forces.
+
+%Core networks of the Internet
+%have evolved into all-optical networks since optical fibers can
+%provide huge amount of bandwidth through the matured DWDM (Dense
+%Wavelength Division Multiplexing) technology.
+Transmission links in the network core are already based on
+optical fiber technology, which provides huge amount of bandwidth
+through the matured DWDM (Dense Wavelength Division Multiplexing)
+technology.
+%Instead of Mbps or
+%Gb/s, the bandwidth of a core network is now measured in Tbps
+%(Tera-bps: 1000 Gb/s) and it can provide almost un-limited bandwidth.
+%For example, bandwidth capacity of the new Trans-Pacific Express is 5.12 Tb/s. \footnote{http://en.wikipedia.org/wiki/TPE\_(cable\_system)}.
+More recently, optical fibers have also found their application in
+access networks to provide high speed Internet access to end
+users.
+%Besides core networks, optical fibers have also been deployed in
+%access networks to provide high speed Internet access to end
+%users.
+FTTx (Fiber To The Home/Building/Curb, etc.) networks based on
+Passive Optical Network (PON) technologies, such as
+Gigabit-capable PON (GPON) standardized by the Full Service Access
+Network (FSAN) group of the International Telecommunications Union
+(ITU) \cite{itu08gpon} and Ethernet PON (EPON) standardized by the
+Ethernet in the First Mile (EFM) task force of the Institute of
+Electrical and Electronics Engineers (IEEE)
+\cite{ieee04EPON8023ah}, have been widely deployed in many
+countries such as the US, Korea and Japan.
+
+%However, compared to ADSL and
+%Cable that could exploit the existing wires, the much higher
+%capital expenditures hindered the deployment of FTTx in many areas.
+
+%Long Reach PON (LR-PON) has emerged recently as a feasible
+%solution (in terms of both technology and economy) to bring
+%optical fiber into access networks and provide high bandwidth to
+%its users \cite{payne02lrpon}\cite{shea07lrpon10G1000onu}. Through
+%increasing the bandwidth and extending the reach of
+%current PON technology to 100 km, the network can be consolidated further
+%and one optical fibre can be shared by more users.
+
+10-Gigabit-capable Passive Optical Network (XG-PON) is a new
+standard released by the FSAN that improves G-PON, by increasing
+the default downstream data rate to 10 Gb/s, while increasing the
+upstream data rate to 2.5 or 10 Gb/s. Also, the maximum number of
+users per wavelength is increased from 64 to 256, and amendments
+are being defined for extending the physical reach up to 60 Km.
+
+
+%Consequently,
+%LR-PON can reduce both the capital expenditure and operational
+%expenditure significantly.
+
+%With the maturity of PON technology, LR-PON concepts have been
+%incorporated into the G-PON standard.
+%the key concepts of LR-PON into GPON has been released by the FSAN
+%as the standard for the next generation optical access networks
+%\cite{itu10XGPON}.
+
+%Ten Gigabit Passive Optical Network (XG-PON) improves the older GPON standard,
+%by increasing the default downstream data rate to 10 Gbps,
+%while upstream it can vary between 2.5 and 10 Gbps.
+%Also the number of users is increased from 64 to 256,
+%and amendments are being defined for extended reach up to 60 Km.
+
+%Our ultimate goal is to study Long-Reach PON (LR-PON),
+%an evolution of XG-PON, with a larger number of users,
+%symmetric data rate (i.e., 10Gbps upstream and downstream),
+%and longer reach (100+km). Our aim is to initially build LR-PON from the XG-PON standard,
+%while identifying required modification and improvements.
+
+Since XG-PON could pave the way for many bandwidth-intensive
+applications (IPTV, Video On Demand, Video Conference, etc.), it
+is very important to study the performance issues arising with the
+deployment of XG-PON. For instance, it is valuable to study the
+impacts on the performance of XG-PON, when the propagation delay
+is much longer than that of the current PON networks
+\cite{song09multithread4LRPON}. It is also important to
+investigate the interactions between XG-PON and the upper-layer
+protocols (TCP \cite{postel81tcp}, etc.) for improving user
+experience \cite{ikeda09tcpPON}. In addition, XG-PON has been
+proposed for Fiber To The Cell, in which XG-PON acts as the
+backhaul for multiple base stations of a cellular network
+\cite{itu10XGPON}. Under this scenario, it is also very valuable
+to study its integration with various wireless networks (LTE
+\cite{lte}, WiMAX \cite{ieee04wimax}, etc.) for providing high
+speed mobile Internet access.
+
+Considering that XG-PON is still in its early stage, the above
+research topics should be first studied through simulation since
+it is too expensive to setup one XG-PON testbed and it is too
+complex to model the above scenarios to be studied with enough
+details. In this report, we present an XG-PON module for NS-3
+\cite{ns3}, a state of the art open-source network simulator. Our
+XG-PON module is based on a series of G.987 Recommendations from
+the FSAN group of ITU. These recommendations mainly define the
+specifications of Physical Media Dependent (PMD) and Transmission
+Convergence (TC) layers of XG-PON. To study the above research
+topics with reasonable simulation speed, the optical distribution
+network and the operations of physical layer are simplified
+significantly. This XG-PON module focuses on the issues of TC
+layer, such as frame structure, resource allocation, Quality of
+Service (QoS) management, and Dynamic Bandwidth Assignment (DBA)
+algorithms for the upstream wavelength. During the design and
+implementation of this module, we have also paid a lot of
+attention on its extensibility and configurability. Since this
+XG-PON module needs to simulate a 10Gbps network and hundreds of
+ONUs, its performance (the speed of simulation and the overhead of
+memory) has also been given a high priority when designing and
+implementing these components.
+
+This XG-PON module is built completely in C++ with 72 classes and
+approximately 22,000 lines of code. These code are under the GNU
+General Public License and can be downloaded from our websites
+(CTVR\footnote{\url{www.ctvr.ie}} and
+MISL\footnote{\url{http://www.ucc.ie/en/misl/}}). To the best of
+our knowledge, it is the first XG-PON module for NS-3. We believe
+that this work is a significant contribution to the scientific
+community as it allows to simulate XG-PON, the next generation
+optical access network, and study the performance issues that
+arise with the deployment of XG-PON.
+
+
+This report is organized as follows. Section
+\ref{section_bg_related} briefly introduces PON, NS-3, and related
+works. The details of XG-PON are then presented in section
+\ref{section_xgpon}. The design principles and key decisions are
+discussed in section \ref{section_choices}. The important
+trade-offs made by us in terms of simulation accuracy and
+simulation speed are also discussed throughout. Section
+\ref{section_design} presents the details of the design and
+implementation of our XG-PON module for NS-3. The preliminary
+evaluation results are then presented in section
+\ref{section_results}. Finally, section \ref{section_conclude}
+concludes this report with several directions for future work. At
+the end of this report, three appendices are also attached for
+introducing the installation with NS-3, the source files, and one
+example of XG-PON simulation.

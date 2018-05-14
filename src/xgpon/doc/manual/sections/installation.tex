@@ -1,0 +1,38 @@
+\section{Installation}
+
+This appendix briefly introduces how to install our XG-PON module
+with NS-3. Here, we assume that NS-3 had been installed on your
+computer and you are using the development code tree.
+
+In this release of our XG-PON module, all files are put into one
+folder "xgpon". In "xgpon", there are several folders that are
+similar to other NS-3 modules, such as "bindings" (for Ptyhon
+bindings), "doc" (for documentations included this manual),
+"examples" (for examples to demonstrate how to use this module),
+"helper" (for classes provided to researcher with aim to
+facilitate its usage), "model" (fore source code), and "test" (for
+test cases).
+
+In "xgpon", we have another folder "changesOnOtherModules" that
+contains some bug fixes related with other modules. Currently, we
+just changed "ipv4-l3-protocol.cc" of the internet module to avoid
+program crash when long simulations are carrying out.
+
+To use this XG-PON module, you should first copy or link "xgpon" under
+the folder "ns-3-dev/src". You should also copy
+the above "ipv4-l3-protocol.cc" (within changesOnOtherModules) 
+into "ns-3-dev/src/internet/model". Note that this file copy is necessary 
+for NS-3.19 and the latest release of NS-3 may have already fixed this bug.
+You may compare the function "ProcessFragment()" of the latest version 
+with our copy to make sure that the bug has been fixed in the latest NS-3 release.
+After that, please configure and build NS-3 as normal. XG-PON module
+should be ready to be explored.
+
+In addition, in "xgpon", there is one folder "scripts4evaluation"
+that holds the scripts used by us to evaluate this module. Before
+running these evaluations, you need copy the corresponding script
+file into "ns-3-dev". To test GiantMAC through running 
+"pedro/pargiantscript.py"), you need set one new environment
+parameter (NS3) according to the path of NS-3 on your system. 
+You should also create "data/giant-data" folder in your NS-3
+installation.

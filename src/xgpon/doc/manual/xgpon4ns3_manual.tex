@@ -1,0 +1,146 @@
+%\documentclass[conference]{IEEEtran}
+%\documentclass[peerreview]{IEEEtran}
+%\documentclass[12pt, onecolumn, draftcls]{IEEEtran}
+\documentclass[onecolumn, draftcls]{IEEEtran}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[small,bf]{caption}
+\usepackage{url}
+\usepackage{latexsym}
+\usepackage{lscape}
+
+\begin{document}
+
+
+\title{An XG-PON Module for the NS-3 Network Simulator: the Manual}
+
+%\numberofauthors{2} 
+
+\author{
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+
+Xiuchao Wu, Kenneth N. Brown, Cormac J. Sreenan, Jerome Arokkiam\\
+ Department of Computer Science, University College Cork, Ireland\\
+\{xw2, k.brown, cjs\}@cs.ucc.ie, \{jerome\}@4c.ucc.ie \\\vspace{0.2in}
+% 2nd. author
+ Pedro Alvarez, Marco Ruffini, Nicola Marchetti, David Payne, Linda Doyle \\
+CTVR / The Telecommunications Research Centre, Trinity College Dublin, Ireland\\
+\{pinheirp, marco.ruffini, marchetn, ledoyle\}@tcd.ie, david.b.payne@btinternet.com 
+}
+
+
+\maketitle \thispagestyle{empty}
+
+\begin{abstract}
+
+10-Gigabit-capable Passive Optical Network (XG-PON), one of the
+latest standards of optical access networks, is regarded as one of
+the key technologies for future Internet access networks. This
+report presents our XG-PON module for the NS-3 network simulator.
+This module is designed and implemented with aim to provide a
+standards-compliant, configurable, and extensible module that can
+simulate XG-PON with reasonable speed and can support a wide range
+of research topics. These include analyzing and improving the
+performance of XG-PON, studying the interactions between XG-PON
+and the upper-layer protocols, and investigating its integration
+with various wireless networks. In this report, we will introduce
+PON and XG-PON, discuss design principles and trade-offs made
+during the course, describe the design and implementation details,
+and present the preliminary evaluation results.
+
+
+\end{abstract}
+
+
+
+\input sections/intro.tex
+%%%introduce optical fiber in the last mile and the promising LR-PON briefly;
+%%%present the motivations for this LR-PON module and summarize our work;
+%%%paper organization.
+
+
+\input sections/background.tex
+%%%introduce PON, LR-PON with some details.
+%%%research opportunities with LR-PON
+%%%related work
+%%%briefly introduce NS-3 and the motivations to implement a LR-PON module for NS-3
+
+
+\input sections/xgpon.tex
+%%%details of XG-PON.
+
+\input sections/choices.tex
+
+\input sections/design.tex
+%%%challenges: standard issue, simulation speed, configuration, extensibility
+%%%design principles adopted in this module
+%%%simulation choices
+%%%Design of this module
+%%%implementation status
+%%%preliminary evaluation, such as validation and simulation speed ({\color{red} depend on coding progress})
+
+
+\input sections/results.tex
+
+
+\section{Summary and Future Work} \label{section_conclude}
+
+
+In this report, we introduce an XG-PON module for the NS-3 network
+simulator. We describe the details of its design and
+implementation, and present some preliminary evaluation results.
+These results indicate that our XG-PON module is quite robust and
+can simulate XG-PON with reasonable speed and moderate memory
+consumption. As the first XG-PON module for NS-3, we believe that
+this work is a significant contribution to the scientific
+community as it allows us to simulate XG-PON and study the
+performance issues that arise with the deployment of XG-PON.
+
+In the future, we will implement more scheduling and DBA
+algorithms that were proposed for G-PON or XG-PON. We will also
+keep improving its simulation speed and parallel/distributed
+simulation will be considered. Furthermore, we will study how to
+simulate Fiber to the Cell with this XG-PON module and the
+WiMAX/LTE modules distributed with NS-3. The potential performance
+issues mentioned in this report will also be investigated using
+this XG-PON module.
+
+
+
+
+%ACKNOWLEDGMENTS are optional
+\section{Acknowledgments}
+This work is supported in part by Science Foundation
+of Ireland through CTVR (http://www.ctvr.ie/).
+
+\appendices
+\newpage
+\input sections/installation.tex
+\newpage
+\input sections/files.tex
+\newpage
+\input sections/example.tex
+
+
+
+%-------------------------------------------------------------------------
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,refxcwu}
+
+
+
+\end{document}

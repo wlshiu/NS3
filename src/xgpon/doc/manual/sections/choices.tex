@@ -1,0 +1,364 @@
+\section{Design Principles and Key Decisions} \label{section_choices}
+
+When designing and implementing XG-PON module, there are many
+issues to be considered and many tradeoffs must be made when the
+goals conflict with each other. This section will present the
+design principles followed by us and the key decisions make during
+the course.
+
+\subsection{Design Principles}
+
+\begin{itemize}
+
+\item{Standard Compliance:}
+
+The ultimate goal of our research is to improve the performance
+issues arisen with the deployment of XG-PON. It is highly
+desirable that the simulated XG-PON is close to the real XG-PON
+networks that will appear in the future. We can then identify the
+real problems and provide solutions that can be directly applied
+in the real world. Hence, we will follow G.987 Recommendations
+from the FSAN group of ITU when designing this XG-PON module.
+
+
+\item{Simplicity:}
+
+Considering that XG-PON is a quite complex standard, it will take
+a very long time to simulate the whole network, from physical
+layer to network management. For instance, the document for ONU
+Management and Control Interface (G.988) is more than 500 pages.
+Hence, we must decide the functions to be simulated in current
+phase. We will only simulate the functions needed by our research.
+Other functions will be left alone or designed as some stub
+classes for the future extension. For instance, since we are
+mainly interested in XGTC layer and upper layer issues, we can
+simulate the physical layer in a very simple way. We can assume
+that power budget for the optical distribution network has been
+satisfied through various techniques. The reach extenders and
+passive optical splitters/jointers need not be simulated. The
+channel, that simulates the optical distribution network of
+XG-PON, can simply pass downstream frames to all ONUs and pass
+upstream bursts to the OLT. As for Forward Error Correction (FEC),
+instead of the algorithm itself, we can simulate only its effect,
+i.e., the bandwidth overhead and the much lower packet corruption
+rate.
+
+
+\item{Extensibility:}
+
+When designing the XG-PON module for NS-3, we should also consider
+its extensibility since many other research topics might also be
+studied using this module. Hence, the extensibility is very
+important. When designing the class architecture of the XG-PON
+module, abstract class should be used appropriately and the
+interface should be well designed for the future implementation
+that simulates more details. Of course, we will only provide a
+much simpler implementation for the components that we are not
+interested in current phase. For instance, when designing the
+class interface for the channel that simulates the optical
+distribution network of XG-PON, we should enable researchers to
+specify the tree structure of fibers, reach extenders, and
+splitters. When adding one ONU, they can also specify the splitter
+that it will be attached and the physical distance between them.
+With this interface, it is possible to simulate the optical signal
+propagation and the possible packet corruption. However, for the
+current phase, we can let the channel store a list of ONUs and
+pass the downstream frames to all of them (without any
+error)\footnote{Depending on the situation, it may be worthwhile
+to simulate a likely packet corruption rate, which should be very
+low with considering the effects of FEC.}. Since DBA algorithm is
+one hot research topic, the classes for DBA should be well
+designed to allow the easy implementation of various DBA
+algorithms.
+
+\item{Configurability:}
+
+In one simulated XG-PON network, there could be thousands of
+nodes, such as the OLT, hundreds of ONUs, and hundreds of data
+traffic generators/sinks in core networks. Many nodes will also be
+attached to ONUs through various networks and act as traffic
+generators/sinks. We should export many configurable parameters,
+but provide default parameters for most of them. Other methods
+should also be considered to easy the researcher's task for
+configuring the XG-PON network to be simulated.
+
+
+\item{Simulation Speed:}
+
+Considering the XG-PON to be simulated is a 10Gbps network,
+simulation speed must be considered in all times. One module, that
+can simulate XG-PON accurately (but very slowly), is useless for
+our research in which extensive simulations are needed. We should
+select the data structures and algorithms carefully for saving CPU
+and memory. For instance, when XG-PON is fully loaded and the size
+of each packet is 1KBytes, the simulator need process around one
+million packets per second. Since XG-PON could have hundreds of
+ONUs (1023 at most), the simulator must run the procedure used by
+ONU to judge whether it is the destination of one XGEM frame one
+billion times per second. This procedure must be implemented
+high-efficiently. Straightforwardly, we can add one vector at each
+ONU whose index is XGEM Port-Id. When configuring XGEM Ports for
+this ONU, this vector can be marked correspondingly. Consequently,
+this vector can be used to filter out the traffic for this ONU
+quickly. However, XGEM Port-Id is a 16-bit number and this vector
+can consume a lot of memory when the number of ONU is large. Due
+to the same reason, hash map in which GEM Port-Id acts as the key
+is not adopted by us too. In our XG-PON module, we impose some
+simple relationship among XGEM Port-Id, Alloc-Id, ONU-ID, and IP
+address of the computer that this XGEM Port belongs to.
+Consequently, we consume a small amount of memory in total and
+achieve $O(1)$ time complexity when mapping IP address/XGEM
+Port-Id to the corresponding data structure.
+
+During the implementation, many useful features of C++ language
+should be exploited and some black-holes of CPU cycles should be
+avoided. First, we should pass parameters by reference whenever it
+is possible and const reference is preferred. We should also know
+that the smart pointer provided by NS-3 is fundamentally a small
+object. When the function is called frequently and some of its
+parameters are smart pointers, we should replace them with the
+reference of that smart pointer. Second, since C++ allows one
+class to override its \emph{new} and \emph{delete} operators, we
+should exploit this feature for data structures that are created
+and destroyed dynamically and frequently. Through overriding the
+two operators, we can avoid to call the expensive \emph{malloc}
+too many times and CPU cycles can be saved. Third, when we select
+the data structure for a sequence of objects, \emph{vector} should
+be considered due to its efficiency. However, when too many
+objects are added into one vector, reallocation may occur and the
+simulation can be slowed down significantly. Thus, we should
+reserve enough memory if the largest vector size can be
+pre-determined. Otherwise, \emph{deque} should be considered as
+the container. Fourth, although virtual function and inheritance 
+are very attractive, they should be used when absolutely necessary
+since virtual function is much slower than the common function. 
+Class downcast should also be avoid in the implementation since
+it is unsafe and consumes a lot of CPU cycles. For instance, for 
+each function of XGPON (DBA, etc.), there should be two classes 
+designed for OLT and ONU, respectively, and it is attractive to
+let them inherit from the same parent. However, the logic at OLT
+is totally different with that of ONU, the amount of reused code 
+is limited, the interface of the parent becomes more complex,
+and simulation speed is slowed down. Thus, these classes are 
+designed independently and the inheritance is not used.
+
+
+
+
+\end{itemize}
+
+
+\subsection{Key Decisions}
+
+Below are several key decisions made by us when designing and
+implementing this XG-PON module.
+
+\begin{itemize}
+
+\item{Stand-alone Simulation:} Since XG-PON is a 10Gbps network with hundreds of
+ONUs, it is very attractive to use distributed simulation to speed
+up XG-PON simulation. However, although NS-3 supports distributed
+simulation through MPI, this feature only works for point-to-point
+links and XG-PON is fundamentally a point-to-multipoint network.
+Many works are necessary to enable distributed simulation for
+XG-PON and we need also study how to allocate ONUs to different
+computers. Furthermore, many researchers may not have the access
+to some clusters and these clusters may not support MPI well.
+Thus, in the current phase, this XG-PON module works as a
+stand-alone simulator. It uses only one core even when one
+computer has multiple processors or cores. In the future,
+distributed simulation will be considered for this XG-PON module.
+
+\item{Packet-level Simulation:} Due to the high bandwidth of XG-PON (10Gbps) and the frequency of
+state-of-the-art processor (several GHz), it is hopeless to
+simulate the details in byte or bit level. For flow-level
+simulation, it's too complex to model both XG-PON and TCP/IP
+protocol stack, and We cannot study the potential subtle
+interactions between TCP/IP and XG-PON. Considering that NS-3 is
+fundamentally a packet-level simulator, this XG-PON module should
+simulate XG-PON in packet level. Furthermore, when passing traffic
+between OLT and ONU, all XGEM frames in the downstream frame or
+upstream burst should be handled together, and the number of
+simulation events can be reduced significantly. Due to the short
+XG-PON frame size (125$\mu$s), the upper layer protocols won't be
+affected if we keep the order of XGEM frames in the downstream
+frame or the upstream burst. Based on this decision, many physical
+layer operations, such as line coding and Forward Error
+Correction, will not be implemented in this module. However, the
+bandwidth overhead of FEC must be considered. Payload
+encryption/decryption will not be implemented too. The logic used
+for key management will be implemented for future extensions.
+
+
+\item{XG-PON in Operation:} Since we are mainly interested in the performance issues of one XG-PON
+network in operation, many aspects of XG-PON can be simplified.
+For instance, the activation procedure that uses PLOAM messages to
+add one ONU to one operating XG-PON need not be implemented. We
+can simply add all ONUs to the network before starting the
+simulation through one helper class. Instead of the ranging
+procedure that uses PLOAM messages to measure the one-way
+propagation delay of each ONU, we can set the same value to both
+the OLT and this ONU when configuring the XG-PON to be simulated.
+In XG-PON, XGEM Port and T-CONT configuration is carried out
+through OMCI (ONU Management and Control Interface: G.988).
+However, this standard document (more than 500 pages) is very
+complex and it will take a lot of time to implement OMCI for
+XG-PON. Thus, instead of configuring XGEM Port and T-CONT
+dynamically through OMCI, we will configure all XGEM Ports and
+T-CONTs before starting the simulation through one helper class.
+In summary, PLOAM and OMCI channels will not be fully implemented
+in this XG-PON module. Stub classes will be designed for the
+future extensions.
+
+
+\item{Simple Optical Distribution Network and Reliable Data Transfer:} In XG-PON,
+the optical distribution network is quite complex and is comprised
+of many optical fibers, splitters/jointers, and reach extenders.
+Although they are important to network architecture and optical
+device research, they are irrelevant to the research topics that
+we plan to study. Thus, the optical distribution network will be
+modeled as one simple channel and we only simulate the propagation
+delay and line rates. We assume that the link power budget has
+been ensured through various techniques (reach extenders, etc.)
+and the laser receiver can work well. Thus, we won't simulate
+optical signal propagation (wavelength-dependent) and assume that
+all downstream frames and upstream bursts can arrive to their
+recipients correctly. In another word, transmission errors are not
+simulated in our XG-PON module. This is reasonable since FEC is
+normally applied to hide transmission errors. Based on this
+decision, CRC and HEC (header error correction) are not executed
+in the simulation.
+
+In the future, transmission error might be simulated. At the
+recipient, the downstream frame or upstream burst will be dropped
+with a distance-dependent probability. This is reasonable since
+FEC is normally used and there is no XGEM frame delimitation. Once
+the transmission error cannot be handled by FEC, all of the
+following data cannot be decoded by the recipient.
+
+\item{Serialization Avoidance and Meta-data in Data Structures:}
+Since this XG-PON module is designed for stand-alone simulation,
+(de)serialization is unnecessary and should be avoided\footnote{Of
+course, all data structures should provide one function to return
+its Serialized size for composing the downstream frame and
+upstream burst correctly.}. This is why XgponXgemFrame is added
+into this XG-PON module to represent XGEM frame. At the first
+glance, we can use Packet provided by NS-3 directly. XGEM frame
+header can be added into and extracted from Packet easily. Packet
+also supports fragmentation and reassembly which is needed by XGEM
+encapsulation. However, when XGEM frame header is added into
+Packet, the header is serialized and put into one byte array. When
+one XGEM frame is received, the recipient needs to extract the
+XGEM frame header from the byte array, i.e., create one
+XgponXgemHeader and carry out de-serialization. Considering that
+one XGEM frame in downstream direction will be processed by
+hundreds of ONUs, the above operations may consume too much CPU.
+To solve this issue, XgponXgemFrame is designed to have one smart
+pointer of XgponXgemHeader and one smart pointer of the
+corresponding SDU (an instance of Packet). At the recipient, it
+can then get XgponXgemHeader directly from XgponXgemFrame.
+
+
+Another observation is that some meta-data can be added into data
+structures for various purposes since they are exchanged between
+OLT and ONU as objects (instead of a byte array). For instance,
+all XGEM frames of one downstream frame need be checked by all
+ONUs and it is very expensive when the number of ONUs is large. We
+notice that due to the small size of the downstream frame and the
+bursty bandwidth allocation, the traffic in one downstream frame
+might belong to a few ONUs. Thus, a bitmap can be added to the
+downstream frame to indicate whether one ONU needs to check XGEM
+frames in this downstream frame. With this meta-data, the
+simulation can be speed up significantly when there are many ONUs
+in the simulated XG-PON network.
+
+
+
+\item{Extensible DBA, Scheduling, and Queue Schemes:}
+
+As discussed in subsection \ref{subsection_schedule_dba},
+downstream scheduler at the OLT is responsible to allocate the
+downstream bandwidth to the downstream XGEM Ports. DBA at the OLT
+is responsible to allocate the upstream bandwidth to T-CONT, and
+upstream scheduler at ONU is responsible to allocate the
+transmission opportunity of one T-CONT to the upstream XGEM Ports.
+These algorithms and the queue used by each XGEM Port at the
+sender side are very important to the performance of the whole
+network and the QoS experienced by user traffic.  In this XG-PON
+module, these classes will be designed carefully to support future
+extensions. New algorithms should be implemented easily through
+inheriting these classes and instantiating a few functions.
+
+
+\end{itemize}
+
+In summary, this XG-PON module can be used to carry out
+stand-alone packet-level simulations for studying XG-PON networks
+in operation. Table \ref{table_choices4xgpon} summarizes how XG-PON functions 
+are supported in this XG-PON module.
+
+
+
+\begin{table}[!htbp]
+\begin{center}
+
+
+\begin{tabular}{|c||l|l|l|}\hline
+{\bf Function} & {\bf Layer} & {\bf Simulated?} & {\bf Comments} \\ \hline \hline
+
+Optical Distribution Network \& & PMD & {\color{red} X} & Use one simple channel to simulate ODN. \\
+Signal Propagation \& &  & & We only simulate propagation delay and bandwidth of the channel.\\
+Line Coding \& Frame Detection & & & These information will be provided to other classes of this module.\\
+\hline
+
+Burst Profile & PMD & {\color{blue} $\surd$} &  Instead of OMCI, they are configure through helper class. \\
+\hline
+
+FEC \& Scrambling &  PHY\_ad & {\color{red} X} & Just provide FEC overhead information to other classes.\\
+\hline
+
+XGTC Framing & Framing & {\color{blue} $\surd$} & \emph{HEC} and CRC is not implemented for saving CPU.\\
+\hline
+
+PLOAM Engine & Framing & {$\surd$} & Just implement the logic and interface for exchanging messages. \\
+\hline
+
+
+DBA \& QoS & Framing & {\color{blue} $\surd$} & Round-robin is implemented first.  \\
+\hline
+
+DS Scheduling \& QoS & N/A & {\color{blue} $\surd$} & In the first phase, Round-robin will be implemented.\\
+\hline
+
+US Scheduling \& QoS & N/A & {\color{blue} $\surd$} & Round-robin will be used for XGEM Ports of one T-CONT.\\
+\hline
+
+XGEM Framing & Service\_ad & {\color{blue} $\surd$} & \emph{HEC} isn't implemented. \emph{Fragmentation and reassembling} are implemented. \\
+\hline
+
+Encryption & Service\_ad & {\color{red} X} & Not implemented. Key management logic will be implemented. \\
+\hline
+
+(De)Multiplexing & Service\_ad & {\color{blue} $\surd$} & Packet classification and flow management are implemented. \\
+                 &             &                        & Alloc-Id, XGEM Port-Id, and IP address are assigned carefully for speed. \\
+\hline
+
+Queue Mechanism & Service\_ad & {\color{blue} $\surd$} & one FIFO queue per XGEM Port \\
+\hline
+
+OMCI \& MIB & N/A & {\color{red} X} & Configuration will be carried out through helper class. \\
+\hline
+
+Activation \& Ranging & N/A & {\color{red} X} & Not implemented. Per-ONU delay is configured through helper class.\\
+\hline
+
+\hline
+
+
+\end{tabular}
+\end{center}
+\vspace{-0.1in}
+\caption{Choices for Simulating XG-PON in NS-3} \label{table_choices4xgpon}
+\end{table}
+
+\clearpage

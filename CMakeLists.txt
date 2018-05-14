@@ -18,7 +18,7 @@ option(NS3_TESTS "Enable tests to be built" OFF)
 set(NS3_TESTS OFF)
 
 option(NS3_EXAMPLES "Enable examples to be built" OFF)
-set(NS3_EXAMPLES ON)
+set(NS3_EXAMPLES OFF)
 
 option(NS3_DEBUG "Build NS3-lib in debug mode" ON)
 set(NS3_DEBUG ON)
@@ -107,6 +107,7 @@ set(libs_to_build
         wave
         wifi #
         wimax
+        xgpon
         #dce
         )
 
