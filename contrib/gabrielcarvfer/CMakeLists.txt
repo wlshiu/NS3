@@ -9,6 +9,7 @@ set(contribution_lib_components
 set(examples
         dynamic_beacon
         dynamic_beacon2
+        dynamic_beacon3
         )
 
 foreach(example ${examples})
