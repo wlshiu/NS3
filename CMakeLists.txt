@@ -27,7 +27,7 @@ option(NS3_DEBUG "Build NS3-lib in debug mode" OFF)
 set(NS3_DEBUG ON)
 
 option(NS3_PYTHON "Build NS3-lib pybindings" OFF)
-set(NS3_PYTHON OFF)
+set(NS3_PYTHON ON)
 
 option(NS3_BOOST "Build with Boost support" OFF)
 set(NS3_BOOST ON)
@@ -39,7 +39,7 @@ option(NS3_LIBXML2 "Build with LIBXML2 support" OFF)
 set(NS3_LIBXML2 ON)
 
 option(NS3_LIBRT "Build with RT support" OFF)
-set(NS3_LIBRT ON) #not working on Windows
+set(NS3_LIBRT OFF) #not working on Windows
 
 option(NS3_MPI "Build with MPI support" OFF)
 set(NS3_MPI OFF)
@@ -72,50 +72,50 @@ set(AUTOINSTALL_DEPENDENCIES ON)
 # libs marked with # on the right are compiling on windows
 # libs marked with * on the right, are not compiling correctly yet when using CMake
 set(libs_to_build
-        antenna               #
-        aodv                  #
-        applications          #
-        bridge                #
-        #brite
-        buildings             #
-        click                 #
-        config-store          #
+        #antenna               #
+        #aodv                  #
+        #applications          #
+        #bridge                #
+        ##brite
+        #buildings             #
+        #click                 #
+        #config-store          #
         core                  #
-        csma                  #
-        csma-layout           #
-        dsdv                  #
-        dsr                   #
-        energy                #
-        #fd-net-device        #requires socket implementation
-        flow-monitor          #
-        internet              #
-        internet-apps         #
-        lr-wpan               #
-        lte                   #
-        mesh                  #
-        mobility              #
-        mpi                   #
-        netanim               # Not working with Clang on Windows
-        network               #
-        nix-vector-routing
-        olsr
-        #openflow
-        point-to-point        #
-        point-to-point-layout
-        propagation           #
-        sixlowpan
-        spectrum              #
-        stats                 #
-        #tap-bridge           #
-        test
-        topology-read         # fixed on Windows with LibPCRE2-posix
-        traffic-control       #
-        uan                   #
-        virtual-net-device    #
-        visualizer
-        wave                  #
-        wifi                  #
-        wimax                 #
+        #csma                  #
+        #csma-layout           #
+        #dsdv                  #
+        #dsr                   #
+        #energy                #
+        ##fd-net-device        #requires socket implementation
+        #flow-monitor          #
+        #internet              #
+        #internet-apps         #
+        #lr-wpan               #
+        #lte                   #
+        #mesh                  #
+        #mobility              #
+        #mpi                   #
+        #netanim               # Not working with Clang on Windows
+        #network               #
+        #nix-vector-routing
+        #olsr
+        ##openflow
+        #point-to-point        #
+        #point-to-point-layout
+        #propagation           #
+        #sixlowpan
+        #spectrum              #
+        #stats                 #
+        ##tap-bridge           #
+        #test
+        #topology-read         # fixed on Windows with LibPCRE2-posix
+        #traffic-control       #
+        #uan                   #
+        #virtual-net-device    #
+        #visualizer
+        #wave                  #
+        #wifi                  #
+        #wimax                 #
         )
 
 

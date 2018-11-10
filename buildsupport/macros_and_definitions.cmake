@@ -5,22 +5,26 @@ elseif()
     list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/buildsupport/CMakeChecksCache")
 endif()
 
-include(buildsupport/vcpkg_hunter.cmake)
-
 if (${AUTOINSTALL_DEPENDENCIES})
+    find_package(Git)
+    if(NOT GIT_FOUND)
+        message(ERROR "Git is required for Vcpkg and automatically installing dependencies")
+    endif()
+    include(buildsupport/vcpkg_hunter.cmake)
     setup_vcpkg()
 endif()
 
 if (WIN32)
     #If using MSYS2
-    set(MSYS2_PATH "C:\\tools\\msys64\\mingw64")
-    set(GTK2_GDKCONFIG_INCLUDE_DIR "${MSYS2_PATH}\\include\\gtk-2.0")
+    set(MSYS2_PATH                  "C:\\tools\\msys64\\mingw64")
+    set(GTK2_GDKCONFIG_INCLUDE_DIR  "${MSYS2_PATH}\\include\\gtk-2.0")
     set(GTK2_GLIBCONFIG_INCLUDE_DIR "${MSYS2_PATH}\\include\\gtk-2.0")
-    set(QT_QMAKE_EXECUTABLE "${MSYS2_PATH}\\bin\\qmake.exe")
-    set(QT_RCC_EXECUTABLE   "${MSYS2_PATH}\\bin\\rcc.exe")
-    set(QT_UIC_EXECUTABLE   "${MSYS2_PATH}\\bin\\uic.exe")
-    set(QT_MOC_EXECUTABLE   "${MSYS2_PATH}\\bin\\moc.exe")
-    set(QT_MKSPECS_DIR      "${MSYS2_PATH}\\share\\qt4\\mkspecs")
+    set(QT_QMAKE_EXECUTABLE         "${MSYS2_PATH}\\bin\\qmake.exe")
+    set(QT_RCC_EXECUTABLE           "${MSYS2_PATH}\\bin\\rcc.exe")
+    set(QT_UIC_EXECUTABLE           "${MSYS2_PATH}\\bin\\uic.exe")
+    set(QT_MOC_EXECUTABLE           "${MSYS2_PATH}\\bin\\moc.exe")
+    set(QT_MKSPECS_DIR              "${MSYS2_PATH}\\share\\qt4\\mkspecs")
+    set(Python2_EXEC                "${MSYS2_PATH}\\bin\\python2.exe")
 endif()
 
 #Fixed definitions
@@ -135,7 +139,7 @@ macro(process_options)
 
     #LibXml2
     if(${NS3_LIBXML2})
-        find_package(LibXml2)
+        find_package(LibXml2 REQUIRED)
         if(NOT ${LIBXML2_FOUND})
             if (NOT ${AUTOINSTALL_DEPENDENCIES})
                 message(FATAL_ERROR "LibXML2 ${NOT_FOUND_MSG}")
@@ -160,7 +164,7 @@ macro(process_options)
         if(WIN32)
             message(WARNING "Lib RT is not supported on Windows, building without it")
         else()
-            find_library(LIBRT rt)
+            find_library(LIBRT REQUIRED rt)
             if(NOT ${LIBRT_FOUND})
                 message(FATAL_ERROR LibRT not found)
             else()
@@ -184,18 +188,14 @@ macro(process_options)
     set(THREADS_FOUND TRUE)
 
     if(${NS3_PYTHON})
-        find_package(Python2 COMPONENTS Interpreter Development)
-        if(NOT ${Python2_FOUND})
-            message(FATAL_ERROR "PYTHON not found")
-        else()
-            file(MAKE_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/ns)
-            link_directories(${Python2_LIBRARY_DIRS})
-            include_directories( ${Python2_INCLUDE_DIRS})
-        endif()
+        find_package(Python2 REQUIRED COMPONENTS Interpreter Development)
+        file(MAKE_DIRECTORY ${CMAKE_OUTPUT_DIRECTORY}/pybindgenTmp)
+        link_directories(${Python2_LIBRARY_DIRS})
+        include_directories( ${Python2_INCLUDE_DIRS})
     endif()
 
     if(${NS3_MPI})
-        find_package(MPI)
+        find_package(MPI REQUIRED)
         if(NOT ${MPI_FOUND})
             message(FATAL_ERROR "MPI not found")
         else()
@@ -207,7 +207,7 @@ macro(process_options)
     endif()
 
     if(${NS3_GSL})
-        find_package(GSL)
+        find_package(GSL REQUIRED)
         if(NOT ${GSL_FOUND})
             #message(FATAL_ERROR GSL not found)
             #If we don't find installed, install
@@ -343,6 +343,7 @@ endmacro()
 
 
 macro (build_lib libname source_files header_files libraries_to_link test_sources)
+
     #Create shared library with sources and headers
     add_library(${lib${libname}} SHARED "${source_files}" "${header_files}")
 
@@ -378,13 +379,31 @@ macro (build_lib libname source_files header_files libraries_to_link test_source
         endif() 
     endif()
 
-    #Build pybindings  if requested
-    if(${NS3_PYTHON})
-        set(arch gcc_LP64)#ILP32)#
+    #Build pybindings if requested
+    if(${NS3_PYTHON} AND ${Python2_FOUND})
+        set(arch gcc_LP64)#ILP32)
+        #todo: fix python module names, output folder and missing links
+        set(module_src ns3module.cc)
+        set(module_hdr ns3module.h)
+
+        set(modulegen_modular_command ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_OUTPUT_DIRECTORY} ${Python2_EXEC} ${CMAKE_SOURCE_DIR}/bindings/python/ns3modulegen-modular.py ${CMAKE_CURRENT_SOURCE_DIR} ${arch} ${libname} ./bindings/${module_src})
+        set(modulegen_arch_command ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_OUTPUT_DIRECTORY}/ ${Python2_EXEC} ./bindings/modulegen__${arch}.py 2> ./bindings/ns3modulegen.log)
+        #message(WARNING ${comm})
         execute_process(
-                COMMAND  PYTHONPATH=${CMAKE_OUTPUT_DIRECTORY} ${Python2_EXEC} ${PROJECT_SOURCE_DIR}/bindings/python/ns3modulegen-modular.py ${PROJECT_SOURCE_DIR}/src/${libname}/bindings/modulegen__${arch}.py > ${CMAKE_OUTPUT_DIRECTORY}/ns/${libname}-module.cc
+                COMMAND ${modulegen_modular_command}
+                COMMAND ${modulegen_arch_command}
+                TIMEOUT 60
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                #OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/bindings/${module_src}
+                RESULT_VARIABLE res
+                ERROR_QUIET
+
         )
+        add_library(ns3module_${libname} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/bindings/${module_src} ${CMAKE_CURRENT_SOURCE_DIR}/bindings/${module_hdr})
+        target_link_libraries(ns3module_${libname} ${LIB_AS_NEEDED_PRE} ${ns3-libs} ${Python2_LIBRARIES} ${LIB_AS_NEEDED_POST})
+        #message(WARNING ${res})
     endif()
+
 endmacro()
 
 macro (build_example name source_files header_files libraries_to_link)
